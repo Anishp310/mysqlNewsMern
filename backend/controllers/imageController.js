@@ -52,68 +52,43 @@ export const createImage = async (req, res) => {
   }
 };
 
-// Update Image (using multer)
 export const updateImage = async (req, res) => {
   const { image_id } = req.params;
-
-  if (!image_id) {
-    return res.status(400).json({ message: "Image ID is required" });
-  }
+  if (!image_id) return res.status(400).json({ message: "Image ID is required" });
 
   try {
-    // Check if a new file is uploaded
     if (req.file) {
-      const imageData = req.file.buffer; // New image data from multer
-
-      // Update the image data
+      const imageData = req.file.buffer;
       const [updatedImage] = await pool.query(
         "UPDATE images SET image_data = ? WHERE image_id = ?",
         [imageData, image_id]
       );
-
       if (updatedImage.affectedRows === 0) {
-        return res.status(404).json({
-          message: `Image with ID ${image_id} not found`,
-        });
+        return res.status(404).json({ message: `Image with ID ${image_id} not found` });
       }
     }
 
-    // If position is being updated, handle it
-    const { position } = req.body; // Get the new position from the request body
+    const { position } = req.body;
     if (position) {
-      const [existingPosition] = await pool.query("SELECT * FROM images WHERE position = ?", [position]);
-      if (existingPosition.length > 0) {
-        return res.status(400).json({ message: "Position already taken" });
-      }
-
-      // Update the position if provided
       const [updatePosition] = await pool.query(
         "UPDATE images SET position = ? WHERE image_id = ?",
         [position, image_id]
       );
-
       if (updatePosition.affectedRows === 0) {
-        return res.status(404).json({
-          message: `Image with ID ${image_id} not found for position update`,
-        });
+        return res.status(404).json({ message: `Image with ID ${image_id} not found for position update` });
       }
     }
 
-    // Fetch the updated (or unchanged) image data
-    const [image] = await pool.query("SELECT * FROM images WHERE image_id = ?", [image_id]);
+    res.status(200).json({ message: "Image updated successfully" });
 
-    res.status(200).json({
-      message: "Image updated successfully",
-      data: image[0], // Return the updated or retained image data
-    });
   } catch (error) {
     console.error("Error updating image:", error.message);
-    res.status(500).json({
-      message: "Server error, unable to update image",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Server error, unable to update image", error: error.message });
   }
 };
+
+
+
 
 
 // Get All Images
@@ -161,30 +136,28 @@ export const getAllImages = async (req, res) => {
 //     });
 //   }
 // };
-
+// Delete Single Image by ID
 export const deleteImage = async (req, res) => {
-  // Get the image ID from URL parameters
   const { image_id } = req.params;
 
-  // If image_id is not provided, send a 400 response
   if (!image_id) {
     return res.status(400).json({ message: "Image ID is required" });
   }
 
   try {
-    // Execute the DELETE query for the provided image_id
-    const [deleteResult] = await pool.query(
-      "DELETE FROM images WHERE image_id = ?",
-      [image_id]
-    );
+    // Delete the image with the provided ID
+    const [deleteResult] = await pool.query("DELETE FROM images WHERE image_id = ?", [image_id]);
 
-    // If no rows were affected, the image was not found
+    // Check if the image was found and deleted
     if (deleteResult.affectedRows === 0) {
-      return res.status(404).json({ message: `Image with ID ${image_id} not found` });
+      return res.status(404).json({
+        message: `Image with ID ${image_id} not found`,
+      });
     }
 
-    // On successful deletion, send a 200 response with a success message
-    res.status(200).json({ message: "Image deleted successfully" });
+    res.status(200).json({
+      message: `Image with ID ${image_id} deleted successfully`,
+    });
   } catch (error) {
     console.error("Error deleting image:", error.message);
     res.status(500).json({

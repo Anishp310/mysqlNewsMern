@@ -12,6 +12,7 @@ const AdminImages = () => {
   const [imagesData, setImagesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const getToken = () => localStorage.getItem("token");
+
   const validateToken = () => {
     const token = getToken();
     if (!token) {
@@ -38,7 +39,7 @@ const AdminImages = () => {
   }, []);
 
   const handleCreateSubmit = async (data) => {
-    validateToken();
+    if (!validateToken()) return;
     const formData = new FormData();
     formData.append("position", data.position);
     formData.append("imageData", data.imageData[0]);
@@ -65,53 +66,54 @@ const AdminImages = () => {
   };
 
   const handleUpdateSubmit = async (data) => {
-    validateToken();
+    if (!validateToken()) return;
     const formData = new FormData();
     formData.append("position", data.position);
-
+    
     // Append the image only if it's selected
     if (data.imageData[0]) {
-      formData.append("imageData", data.imageData[0]);
+       formData.append("imageData", data.imageData[0]);
     }
-
+ 
     try {
-      const response = await fetch(`${SummaryApi.updateImage.url}/${editData.image_id}`, {
-        method: "PUT",
-        body: formData, // Send the formData with image if available
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-
-      if (response.ok) {
-        const updatedEntry = await response.json();
-
-        // Update the local state with the updated entry
-        setImagesData((prevData) =>
-          prevData.map((item) =>
-            item.image_id === updatedEntry.image_id ? updatedEntry : item
-          )
-        );
-
-        setOpenModal(false);
-        setEditData(null);
-        getApiData(); // Re-fetch the data after adding
-      } else {
-        console.error("Failed to update image", response.statusText);
-      }
+       const response = await fetch(`${SummaryApi.updateImage.url}/${editData.image_id}`, {
+          method: "PUT",
+          body: formData,
+          headers: {
+             Authorization: `Bearer ${getToken()}`,
+          },
+       });
+ 
+       if (response.ok) {
+          const updatedEntry = await response.json();
+ 
+          // Update the local state with the updated entry
+          setImagesData((prevData) =>
+             prevData.map((item) =>
+                item.image_id === updatedEntry.image_id ? updatedEntry : item
+             )
+          );
+ 
+          setOpenModal(false);
+          setEditData(null);
+          getApiData(); // Re-fetch the data after update
+       } else {
+          console.error("Failed to update image", response.statusText);
+       }
     } catch (error) {
-      console.error("Error updating image:", error);
+       console.error("Error updating image:", error);
     }
-  };
+ };
+ 
+
   const handleUpdate = (id) => {
     const rowToUpdate = imagesData.find((item) => item.image_id === id);
-    setEditData(rowToUpdate); // Correct the lookup to match `image_id`
-    setOpenModal(true);
+    setEditData(rowToUpdate); // Set the data to edit in the modal
+    setOpenModal(true); // Open the modal
   };
-  
+
   const handleDelete = async (id) => {
-    validateToken();
-    console.log(id)
+    if (!validateToken()) return;
     try {
       const response = await fetch(`${SummaryApi.deleteImage.url}/${id}`, {
         method: "DELETE",
