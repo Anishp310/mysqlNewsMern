@@ -1,22 +1,34 @@
-import React, { useState } from 'react';
-import img2 from "../../assets/tut.jpg";
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllNews } from "../../redux/counterSlice/index.js";
 import Card from '../props/Card';
 
 const NoticeCard = () => {
-  const newsData = Array(12).fill({ // Dummy news items (you can replace this with dynamic data)
-    title: '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ',
-    image: img2
-  });
+  const dispatch = useDispatch();
+  const { information, loading, error } = useSelector((state) => state.news);
 
-  const itemsPerPage = 8; // Items per page
+  const itemsPerPage = 8;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(newsData.length / itemsPerPage);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await dispatch(fetchAllNews()).unwrap();
+        console.log("Fetched data:", result);
+      } catch (err) {
+        console.error("Failed to fetch news:", err);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
 
-  // Slice the data for the current page
-  const currentNews = newsData.slice(
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const filteredinformations = information.slice(1); 
+  const filteredinformation = filteredinformations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const totalPages = Math.ceil(filteredinformation.length / itemsPerPage);
+  const currentNews = filteredinformation.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -32,14 +44,18 @@ const NoticeCard = () => {
   return (
     <div className='mb-4'>
       <div className="cards mt-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <Card   title= '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ' 
-      image={img2} />
-      <Card   title= '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ' 
-      image={img2} /><Card   title= '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ' 
-      image={img2} /><Card   title= '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ' 
-      image={img2} /><Card   title= '२ करोड बराबरको अनलाइन जुवा खेलाएको आरोपमा २ जना पक्राउ' 
-      image={img2} />
+        {currentNews.slice(1)?.map((item) => (
+          <div key={item.information_id}>
+            <Card 
+              title={item.title || "No Title Available"} 
+              image={item.image_data} 
+              slug={item.slug} 
+              link="information" 
+            />
+          </div>
+        ))}
       </div>
+
       {/* Pagination Controls */}
       <div className="flex justify-center gap-4 mt-4">
         <button

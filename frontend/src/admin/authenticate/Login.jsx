@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthForm from "../common/AuthForm.jsx"; // Adjust the path accordingly
 import { Link, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
@@ -6,7 +6,6 @@ import SummaryApi from "../../API/Api.js";
 
 const Login = () => {
   const navigate = useNavigate();
-
   const handleLoginSubmit = async (data) => {
     try {
       const payload = { email: data.email, password: data.password };
@@ -15,23 +14,45 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
+  
       const jsonData = await response.json();
       if (!response.ok) {
         toast.error("Email or Password is not correct");
         return;
       }
-      toast.success("login Successful");
-    
+      toast.success("Login Successful");
+  
+      const tokenExpirationTime = Date.now() + 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+  
       localStorage.setItem("token", jsonData.token);
       localStorage.setItem("userData", JSON.stringify(jsonData.user));
+      localStorage.setItem("tokenExpiry", tokenExpirationTime);
   
-     
       navigate("/admin");
+  
+      // Set a timeout to clear token after 4 hours
+      setTimeout(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userData");
+        localStorage.removeItem("tokenExpiry");
+        toast.info("Session expired. Please log in again.");
+      }, 4 * 60 * 60 * 1000);
     } catch (error) {
       toast.error("An error occurred during login.");
     }
   };
+  
+  // Check token expiration on page load
+  useEffect(() => {
+    const tokenExpiry = localStorage.getItem("tokenExpiry");
+    if (tokenExpiry && Date.now() > tokenExpiry) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("tokenExpiry");
+      toast.info("Session expired. Please log in again.");
+    }
+  }, []);
+  
 
   return (
     <>
@@ -55,12 +76,12 @@ const Login = () => {
             Register{" "}
           </Link>
         </p>
-        <p className="align-baseline font-medium mt-4 mb-4 text-sm">
+        {/* <p className="align-baseline font-medium mt-4 mb-4 text-sm">
          
           <Link to="/forgot-password" className="text-blue-500 hover:text-blue-700">
           Forgot passowrd ?
           </Link>
-        </p>
+        </p> */}
         <p className="mt-5 text-center text-gray-500 text-xs">
           @2025 Jooneli. All rights reserved.
         </p>

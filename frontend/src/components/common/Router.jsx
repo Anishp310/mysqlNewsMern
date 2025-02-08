@@ -30,6 +30,7 @@ import AdminNational from "../../admin/pages/AdminNational.jsx";
 import AdminOthers from "../../admin/pages/AdminOthers.jsx";
 import AdminSports from "../../admin/pages/AdminSports.jsx";
 import Detail from "../../pages/Detail.jsx";
+import AdminImages from "../../admin/pages/AdminImages.jsx";
 
 const Router = createBrowserRouter([
   {
@@ -53,7 +54,7 @@ const Router = createBrowserRouter([
         element: <National />,
       },
       {
-        path: "/national/:id", // This defines the "/home" route
+        path: "/national/:slug", // This defines the "/home" route
         element: <NationalDetail />,
       },
       {
@@ -115,7 +116,7 @@ const Router = createBrowserRouter([
       },
       // {
       //   path: "/detailcheck", // This defines the "/home" route
-      //   element: <DetailCheck />,
+      //   element: <Detail />,
       // },
     ],
   },
@@ -166,6 +167,10 @@ const Router = createBrowserRouter([
       {
         path: "sports",
         element: <AdminSports />,
+      },
+      {
+        path: "images",
+        element: <AdminImages />,
       },
     ],
   },

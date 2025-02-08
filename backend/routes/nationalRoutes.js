@@ -7,14 +7,14 @@ import {
   deleteNational,
   upload,
 } from "../controllers/nationalController.js";
-import multer from "multer"
+import authenticateToken from "../middlewares/authenticateToken.js";
 
 const router = express.Router();
 
-router.post("/national", upload.single("image"), createNational);
+router.post("/national", upload.single("imageData"),authenticateToken, createNational);
 router.get("/getAllNational", getAllNationals);
-router.get("/getNational/:national_id", getNationalById);
-router.put("/updateNational/:national_id", upload.single("image"), updateNational);
-router.delete("/deleteNational/:national_id", deleteNational);
+router.get("/getNational/:slug", getNationalById);
+router.put("/updateNational/:national_id", upload.single("imageData"),authenticateToken, updateNational);
+router.delete("/deleteNational/:national_id",authenticateToken, deleteNational);
 
 export default router;

@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-const AuthForm = ({ onSubmit, formFields }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+const AuthForm = ({ onSubmit, formFields, editData }) => {
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+
+  // Set default values when data is passed
+  useEffect(() => {
+    formFields.forEach(field => {
+      if (field.defaultValue) {
+        setValue(field.name, field.defaultValue);
+      }
+    });
+  }, [formFields, setValue]);
 
   return (
     <div className="">
       <form onSubmit={handleSubmit(onSubmit)}>
-        {formFields.map(({ name, type, placeholder, validation }) => (
+        {formFields.map(({ name, type, placeholder, validation, defaultValue }) => (
           <div key={name} className="mb-4">
             <label
               htmlFor={name}
@@ -22,6 +31,25 @@ const AuthForm = ({ onSubmit, formFields }) => {
                 placeholder={placeholder}
                 className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
               />
+            ) : type === "file" ? (
+              <div>
+                {editData?.image_data && (
+                  <div className="mb-2">
+                    <img
+                      src={editData.image_data} // Assuming `image_data` contains the image URL
+                      alt="Current image"
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                    <p>Current Image</p>
+                  </div>
+                )}
+                <input
+                  {...register(name, validation)}
+                  type={type}
+                  id={name}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
+                />
+              </div>
             ) : (
               <input
                 {...register(name, validation)}

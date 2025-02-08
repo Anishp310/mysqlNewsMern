@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaTachometerAlt, FaGlobe, FaMoneyBill, FaInfoCircle, FaFootballBall, FaTv, FaAd, FaEllipsisH } from 'react-icons/fa';
+import { CiImageOn } from "react-icons/ci";
 
 const menuItems = [
   { path: "/admin", label: "Dashboard", icon: <FaTachometerAlt /> },
@@ -12,6 +13,8 @@ const menuItems = [
   { path: "/admin/entertainment", label: "Entertainment", icon: <FaTv /> },
   { path: "/admin/ads", label: "Ads", icon: <FaAd /> },
   { path: "/admin/others", label: "Others", icon: <FaEllipsisH /> },
+  { path: "/admin/images", label: "Promotional Images", icon: <CiImageOn />},
+
 ];
 
 const Menulist = () => {
